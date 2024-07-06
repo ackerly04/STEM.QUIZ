@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM Career Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #d1c4e9, #e1bee7);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #ff6f61;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            display: none;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .question h2 {
+            color: #2196f3; /* Change the color here */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .options input {
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #ff6f61;
+            color: #fff;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #e55b53;
+        }
+
+        #result {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="landingPage">
+        <h1>Welcome to the STEM Career Quiz</h1>
+        <button onclick="startQuiz()">Start the Quiz</button>
+    </div>
+    <div class="container" id="quiz" style="display: none;">
+        <h1>Career Quiz</h1>
+        <div id="questionContainer">
+            <!-- Questions will be inserted here dynamically -->
+        </div>
+        <button id="nextButton" onclick="nextQuestion()">Next</button>
+        <button id="submitButton" onclick="submitQuiz()" style="display: none;">Submit</button>
+    </div>
+    <div class="container" id="result">
+        <h1>Your Best Career Fit is:</h1>
+        <div class="result">
+            <p id="careerName"></p>
+            <p id="careerDescription"></p>
+        </div>
+        <button onclick="restartQuiz()">Take the Quiz Again</button>
+    </div>
+    <script>
+        const questions = [
+            {
+                id: 'question1',
+                text: 'What activity do you enjoy the most?',
+                options: { software: 'Coding or building apps', environmental: 'Working on sustainability projects', research: 'Conducting experiments', engineering: 'Building and designing things', data: 'Analyzing data', medical: 'Helping others with health issues', aerospace: 'Exploring space', chemical: 'Working with chemicals' }
+            },
+            {
+                id: 'question2',
+                text: 'Which subject do you excel in?',
+                options: { software: 'Computer Science', environmental: 'Environmental Science', research: 'Biology or Chemistry', engineering: 'Physics', data: 'Mathematics', medical: 'Biology', aerospace: 'Physics', chemical: 'Chemistry' }
+            },
+            {
+                id: 'question3',
+                text: 'What is your ideal work environment?',
+                options: { software: 'Tech company', environmental: 'Outdoors or conservation sites', research: 'Lab or research facility', engineering: 'Design and production facility', data: 'Office with lots of data', medical: 'Hospital or clinic', aerospace: 'Space agency or aeronautics', chemical: 'Chemical plant or lab' }
+            },
+            {
+                id: 'question4',
+                text: 'What type of projects excite you the most?',
+                options: { software: 'Developing new software', environmental: 'Environmental conservation', research: 'Scientific research', engineering: 'Engineering design', data: 'Data analysis', medical: 'Medical research', aerospace: 'Space missions', chemical: 'Chemical research' }
+            },
+            {
+                id: 'question5',
+                text: 'What motivates you the most?',
+                options: { software: 'Innovating with tech', environmental: 'Protecting the planet', research: 'Discovering new things', engineering: 'Creating practical solutions', data: 'Finding patterns in data', medical: 'Improving health', aerospace: 'Exploring the unknown', chemical: 'Developing new materials' }
+            },
+            {
+                id: 'question6',
+                text: 'What is your preferred problem-solving approach?',
+                options: { software: 'Coding solutions', environmental: 'Sustainable methods', research: 'Experimental methods', engineering: 'Design thinking', data: 'Data-driven decisions', medical: 'Clinical methods', aerospace: 'Engineering solutions', chemical: 'Chemical analysis' }
+            },
+            {
+                id: 'question7',
+                text: 'Which of these hobbies do you like the most?',
+                options: { software: 'Playing video games', environmental: 'Gardening or hiking', research: 'Reading scientific journals', engineering: 'DIY projects', data: 'Playing with stats', medical: 'Volunteering at health camps', aerospace: 'Watching space documentaries', chemical: 'Mixing different substances' }
+            },
+            {
+                id: 'question8',
+                text: 'How do you prefer to spend your free time?',
+                options: { software: 'Programming', environmental: 'Exploring nature', research: 'Doing science experiments', engineering: 'Building models', data: 'Analyzing data', medical: 'Learning about health', aerospace: 'Stargazing', chemical: 'Experimenting with chemicals' }
+            },
+            {
+                id: 'question9',
+                text: 'What kind of books do you enjoy reading?',
+                options: { software: 'Tech blogs or programming books', environmental: 'Environmental conservation books', research: 'Science fiction or research papers', engineering: 'Engineering books or manuals', data: 'Statistics or data science books', medical: 'Medical journals or health books', aerospace: 'Space exploration books', chemical: 'Chemistry books' }
+            },
+            {
+                id: 'question10',
+                text: 'What kind of news grabs your attention the most?',
+                options: { software: 'Tech news', environmental: 'Environmental issues', research: 'Scientific discoveries', engineering: 'New engineering feats', data: 'Data breaches or big data news', medical: 'Health breakthroughs', aerospace: 'Space missions', chemical: 'Chemical innovations' }
+            }
+        ];
+
+        let currentQuestion = 0;
+        let scores = {
+            software: 0,
+            environmental: 0,
+            research: 0,
+            engineering: 0,
+            data: 0,
+            medical: 0,
+            aerospace: 0,
+            chemical: 0
+        };
+
+        function startQuiz() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            currentQuestion = 0;
+            showQuestion(currentQuestion);
+            document.getElementById('nextButton').style.display = 'inline-block';
+            document.getElementById('submitButton').style.display = 'none';
+        }
+
+        function showQuestion(questionIndex) {
+            const questionContainer = document.getElementById('questionContainer');
+            questionContainer.innerHTML = '';
+
+            if (questionIndex < questions.length) {
+                const question = questions[questionIndex];
+                const questionDiv = document.createElement('div');
+                questionDiv.id = question.id;
+                questionDiv.className = 'question';
+                questionDiv.style.display = 'block';
+
+                const questionText = document.createElement('h2');
+                questionText.textContent = question.text;
+                questionDiv.appendChild(questionText);
+
+                const questionOptions = document.createElement('div');
+                questionOptions.className = 'options';
+
+                for (const [key, value] of Object.entries(question.options)) {
+                    const label = document.createElement('label');
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = question.id;
+                    input.value = key;
+                    label.appendChild(input);
+                    label.appendChild(document.createTextNode(value));
+                    questionOptions.appendChild(label);
+                }
+
+                questionDiv.appendChild(questionOptions);
+                questionContainer.appendChild(questionDiv);
+            }
+        }
+
+        function nextQuestion() {
+            const selectedOption = document.querySelector(`input[name="${questions[currentQuestion].id}"]:checked`);
+            if (selectedOption) {
+                scores[selectedOption.value]++;
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    showQuestion(currentQuestion);
+                } else {
+                    document.getElementById('nextButton').style.display = 'none';
+                    document.getElementById('submitButton').style.display = 'inline-block';
+                }
+            } else {
+                alert("Please select an option to proceed.");
+            }
+        }
+
+        function submitQuiz() {
+            const career = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+
+            document.getElementById('careerName').textContent = career.charAt(0).toUpperCase() + career.slice(1);
+            document.getElementById('careerDescription').textContent = getCareerDescription(career);
+        }
+
+        function getCareerDescription(career) {
+            const descriptions = {
+                software: "You have a strong interest in technology and enjoy solving complex problems through programming. A career in software development would allow you to create innovative solutions and work on cutting-edge technologies.",
+                environmental: "You are passionate about making a difference in the world and addressing environmental issues. A career in environmental science would let you work on conservation projects and promote sustainability.",
+                research: "You are curious and enjoy conducting experiments and analyzing data. A career in scientific research would allow you to explore new discoveries and contribute to advancements in your field.",
+                engineering: "You have a knack for designing and building things. A career in engineering would enable you to work on diverse projects and create practical solutions to real-world problems.",
+                data: "You are skilled at analyzing data and finding patterns. A career in data science would let you work with large datasets and provide valuable insights to drive decision-making.",
+                medical: "You are interested in improving health outcomes and patient care. A career in medicine or healthcare would allow you to diagnose and treat patients, making a significant impact on their lives.",
+                aerospace: "You are fascinated by space exploration and advanced technology. A career in aerospace engineering would give you the opportunity to work on spacecraft and contribute to space missions.",
+                chemical: "You enjoy working with chemicals and developing new products. A career in chemical engineering would involve conducting experiments and working on chemical processes to create innovative solutions."
+            };
+
+            return descriptions[career];
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            scores = {
+                software: 0,
+                environmental: 0,
+                research: 0,
+                engineering: 0,
+                data: 0,
+                medical: 0,
+                aerospace: 0,
+                chemical: 0
+            };
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
